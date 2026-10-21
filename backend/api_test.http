@@ -1,0 +1,18 @@
+### ทดสอบ login
+
+POST http://localhost:3301/api/login
+Content JSON
+{
+"username":"admin",
+"password":"Admin1234!"
+}
+
+### ทดสอบ login แบบผิด
+
+POST http://localhost:3301/api/login
+Content JSON
+{
+"username":"admin",
+"password":"Admin123"
+}
+

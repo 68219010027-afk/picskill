@@ -2,7 +2,7 @@
 const express = require('express');
 const { query } = require('./db');
 const { ok, route } = require('./helpers');
-// const { auth } = require('./auth); // ชั้น 2
+ const { auth } = require('./auth'); // ชั้น 2
 const app = express();
 app.use(express.json());
 
@@ -14,8 +14,8 @@ app.get(
     ok(res, { ready: true });
 }),
 );
-// app.use('/api', require('./routes/users')); // ชั้น 2
-// app.use('/api', auth); // ชั้น 2
+ app.use('/api', require('./routes/users')); // ชั้น 2
+ app.use('/api', auth); // ชั้น 2
 // app.use('/api', require('./routes/periods')); // ชั้น 3
 // app.use('/api', require('/routes/self')); // ชั้น 4
 // app.use('/api', require('./routes/files')); // ชั้น 4
@@ -29,7 +29,7 @@ app.use('/api', (req,res) =>
 // จัดการ error ทุกชนิดที่เดียว (EXception Handling)
 app.use((error, req, res, next) => {
     let message = error.message,
-    status = error.starus || 500;
+    status = error.status || 500;
     if (error.code === 'ER_DUP_ENTRY') {
         message = 'ข้อมูลซ้ำ กรุณาตรวจสอบชื่อผู้ใช้หรือรายการที่เพิ่ม';
         status = 400;
