@@ -16,7 +16,7 @@ app.get(
 );
  app.use('/api', require('./routes/users')); // ชั้น 2
  app.use('/api', auth); // ชั้น 2
-// app.use('/api', require('./routes/periods')); // ชั้น 3
+ app.use('/api', require('./routes/periods')); // ชั้น 3
 // app.use('/api', require('/routes/self')); // ชั้น 4
 // app.use('/api', require('./routes/files')); // ชั้น 4
 // app.use('/api', require('./routes/evaluate')); //ชั้น 5

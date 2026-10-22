@@ -19,19 +19,21 @@ function route(fn) {
     return (req, res, next) => Promise.resolve(fn(req, res, next,)).catch(next);
 }
 async function getPeriod(id) {
-    const rows = await query('SELECT * FORM periods WHERE id=?', [id]);
-    check(rows,length, 'ไม่พบรอบ', 404);
-    return row[0];
+    const rows = await query('SELECT * FROM periods WHERE id=?', [id]);
+    check(rows.length, 'ไม่พบรอบ', 404);
+    return rows[0];
 }
 async function getParticipant(id) {
-    const row = await query(
+    const rows = await query(
         'SELECT p.*,u.full_name FROM participants p JOIN users u ON u.id=p.user_id WHERE p.id=?',
-        [periodId],
+        [id],
     );
+    check(rows.length, 'ไม่พบผู้รับการประเมิน', 404);
+    return rows[0];
 }
-async function items(periodld) {
+async function items(periodId) {
     return query(
-        'SELECT i.*,t.name AS topic FROM indicators i JOIN topics t ON t.id=i.topic_id WHERE t.period_id=? ORDER BY t.id,.id',
+        'SELECT i.*,t.name AS topic FROM indicators i JOIN topics t ON t.id=i.topic_id WHERE t.period_id=? ORDER BY t.id,i.id',
         [periodId],
     );
 }
@@ -68,7 +70,7 @@ function percentage(indicators, scores) {
 function complete(item, row) {
     if (!row || !scoreValid(item, row.score) || !row.description.trim()) return false;
     if (!item.evidence_required) return true;
-    return item.evidnce_type === 'file' ? !!row.evidence_file : !!row.evidence_url;
+    return item.evidence_type === 'file' ? !!row.evidence_file : !!row.evidence_url;
 }
 module.exports = {
     check,
