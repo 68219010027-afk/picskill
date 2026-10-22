@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "seed": "node seed.js",
+    "seed": "node --env-file=.env seed.js",
     "start": "node server.js",
-    "dev": "nodemon -L server.js",
+    "dev": "node --env-file=.env ./node_modules/nodemon/bin/nodemon.js -L server.js",
     "test": "node --test tests/score.test.js",
     "test:api": "node --test tests/api.test.js"
   },

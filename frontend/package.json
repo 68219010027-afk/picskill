@@ -1,5 +1,5 @@
 {
-  "name": "fontend",
+  "name": "frontend",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.5.42"
+    "@mdi/font":"7.4.47",
+    "html2pdf.js": "^0.10.1",
+    "vue": "^3.5.42",
+    "vuetify": "^3.3.15"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.8",

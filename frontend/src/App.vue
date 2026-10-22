@@ -1,47 +1,122 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <v-app>
+    <header>
+      <div>
+        <strong>PIC • ประเมินบุคลากร</strong>
+        <small>ฉบับแยก Vue / API</small>
+      </div>
+      <div v-if="user">
+        {{ user.full_name }}
+        <v-btn variant="outlined" color="white" @click="logout">ออกจากระบบ</v-btn>
+      </div>
+    </header>
+    <nav v-if="user && !user.must_change_password">
+      <template v-if="user.role === 'admin'">
+        <v-btn :variant="page === 'periods' ? 'tonal' : 'text'" @click="go('periods')">
+          รอบประเมิน
+        </v-btn>
+        <v-btn :variant="page === 'users' ? 'tonal' : 'text'" @click="go('users')"> ผู้ใช้ </v-btn>
+      </template>
+      <v-btn v-if="user.role === 'evaluatee'" @click="go('self')">ประเมินตนเอง</v-btn>
+      <v-btn v-if="user.role === 'evaluatee'" @click="go('my-results')">ผลการประเมินของฉัน</v-btn>
+      <v-btn v-if="user.role === 'evaluator'" @click="go('evaluate')">งานกรรมการ</v-btn>
+      <v-btn @click="go('profile')">ข้อมูลส่วนตัว</v-btn>
+      <v-btn @click="go('password')">เปลี่ยนรหัสผ่าน</v-btn>
+    </nav>
+    <main>
+      <v-alert v-if="error" type="error" closable @click:close="error = ''">
+        {{ error }}
+      </v-alert>
+      <v-alert v-if="message" type="success" closable @click:close="message = ''">
+        {{ message }}
+      </v-alert>
+      <login-page v-if="!user" @logged-in="login"></login-page>
+      <template v-else>
+        <password-page v-if="page === 'password'"></password-page>
+        <my-results-page v-if="page === 'my-results'" @result="result"></my-results-page>
+        <profile-page v-if="page === 'profile'"></profile-page>
+        <user-page v-if="page === 'users'"></user-page>
+        <periods-page v-if="page === 'periods'" @report="report"></periods-page>
+        <self-page v-if="page === 'self'" @result="result"></self-page>
+        <evaluate-page v-if="page === 'evaluate'"></evaluate-page>
+        <reports-page
+          v-if="page === 'reports'"
+          :key="periodId + '-' + participantId"
+          :period-id="periodId"
+          :participant-id="participantId"
+      ></reports-page>
+    </template>
+</main>
+</v-app>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
+<script>
+import { api } from './api';
+import LoginPage from './pages/LoginPage.vue';
+import ProfilePage from './pages/ProfilePage.vue';
+import UserPage from './pages/UserPage.vue';
+import PeriodsPage from './pages/PeriodsPage.vue';
+import PasswordPage from './pages/PasswordPage.vue';
+import NotReady from './pages/NotReady.vue';
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
+export default {
+  components: {
+    
+    LoginPage,
+    ProfilePage,
+    UserPage,
+    PeriodsPage,
+    PasswordPage,
+    SelfPage: NotReady,
+    EvaluatePage: NotReady,
+    ReportsPage: NotReady,
+    MyResultsPage: NotReady,
+  },
+  data() {
+    return { user: null, page: '', error: '', message: '', periodId: null, participantId: null };
+  },
+  async mounted() {
+    if (localStorage.getItem('split_token')) {
+      try {
+        await this.login();
+      } catch {
+        this.logout();
+      }
+    }
+  },
+  methods: {
+    async login() {
+      this.user = await api('/me');
+      this.go(
+        this.user.role === 'admin'
+          ? 'periods'
+          : this.user.role === 'evaluatee'
+            ? 'self'
+            : 'evaluate',
+      );
+    },
+    logout() {
+      localStorage.removeItem('split_token');
+      this.user = null;
+      this.page = '';
+      this.error = '';
+      this.message = '';
+    },
+    go(page) {
+      this.page = this.user?.must_change_password ? 'password' : page;
+      this.error = '';
+      this.message = '';
+    },
+    report(id) {
+      this.periodId = id;
+      this.participantId = null;
+      this.go('reports');
+    },
+    result(id) {
+      this.participantId = id;
+      this.periodId = null;
+      this.go('reports');
+    },
+  },
+};
+</script>
